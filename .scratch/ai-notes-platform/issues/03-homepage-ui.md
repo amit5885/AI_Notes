@@ -4,10 +4,10 @@
 
 **Blocked by:** 01 (Project scaffolding)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create `src/app/page.tsx` with hero section and tagline
-- [ ] Add search bar component (centered, prominent, with Enter key support)
-- [ ] Add placeholder section for trending topics (static for now)
-- [ ] Add footer with basic site info
-- [ ] Style with Tailwind for mobile-first responsive layout
+- [x] Create `src/app/page.tsx` with hero section and tagline
+- [x] Add search bar component (centered, prominent, with Enter key support)
+- [x] Add placeholder section for trending topics (static for now)
+- [x] Add footer with basic site info
+- [x] Style with Tailwind for mobile-first responsive layout
