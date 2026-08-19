@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Initialize Next.js project with App Router
-- [ ] Install and configure Tailwind CSS
-- [ ] Install Prisma and initialize with PostgreSQL provider
-- [ ] Create folder structure: `src/app/`, `src/lib/`, `src/components/`
-- [ ] Add `.env.example` with `DATABASE_URL` and `GEMINI_API_KEY` placeholders
-- [ ] Verify `npm run dev` starts without errors
+- [x] Initialize Next.js project with App Router
+- [x] Install and configure Tailwind CSS
+- [x] Install Prisma and initialize with PostgreSQL provider
+- [x] Create folder structure: `src/app/`, `src/lib/`, `src/components/`
+- [x] Add `.env.example` with `DATABASE_URL` and `GEMINI_API_KEY` placeholders
+- [x] Verify `npm run dev` starts without errors

@@ -1,4 +1,3 @@
-# See https://www.prisma.io/docs/orm/prisma-schema/setup/generating-prisma-client
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,4 +5,16 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  topic      String   // normalized slug
+  rawQuery   String   // original student input
+  title      String
+  content    Json     // { intro, keyConcepts, howItWorks, example, summary }
+  diagramUrl String?  // generated image URL
+  createdAt  DateTime @default(now())
+
+  @@index([topic])
 }

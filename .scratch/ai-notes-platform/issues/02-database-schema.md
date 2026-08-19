@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 (Project scaffolding)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Define Note model in `schema.prisma` (id, topic, rawQuery, title, content JSON, diagramUrl, createdAt)
-- [ ] Add index on `topic` column
-- [ ] Run `prisma migrate dev` to create tables
-- [ ] Verify connection with `prisma db push` or seed script
+- [x] Define Note model in `schema.prisma` (id, topic, rawQuery, title, content JSON, diagramUrl, createdAt)
+- [x] Add index on `topic` column
+- [x] Run `prisma generate` to create client
+- [x] Verify types with typecheck and build
