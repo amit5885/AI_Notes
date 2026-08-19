@@ -4,12 +4,12 @@
 
 **Blocked by:** 02 (Database schema)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create `src/app/api/generate/route.ts`
-- [ ] Accept POST with `{ topic: string }` body
-- [ ] Call Gemini API with the note generation prompt
-- [ ] Parse AI response into structured content (intro, keyConcepts, howItWorks, example, summary)
-- [ ] Store note in PostgreSQL via Prisma
-- [ ] Return the generated note as JSON
-- [ ] Handle errors gracefully (AI failure, DB failure)
+- [x] Create `src/app/api/generate/route.ts`
+- [x] Accept POST with `{ topic: string }` body
+- [x] Call Gemini API with the note generation prompt
+- [x] Parse AI response into structured content (intro, keyConcepts, howItWorks, example, summary)
+- [x] Store note in PostgreSQL via Prisma
+- [x] Return the generated note as JSON
+- [x] Handle errors gracefully (AI failure, DB failure)
