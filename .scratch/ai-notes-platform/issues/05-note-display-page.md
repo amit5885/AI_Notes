@@ -4,11 +4,11 @@
 
 **Blocked by:** 04 (Note generation API)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create `src/app/notes/[topic]/page.tsx`
-- [ ] Fetch note from API or database on load
-- [ ] Render six sections: Title (H1), Introduction, Key Concepts (bullets), How It Works, Example/Analogy, Summary
-- [ ] Add back button to return to homepage
-- [ ] Show loading state while fetching
-- [ ] Handle not-found case (topic doesn't exist yet)
+- [x] Create `src/app/notes/[topic]/page.tsx`
+- [x] Fetch note from API or database on load
+- [x] Render six sections: Title (H1), Introduction, Key Concepts (bullets), How It Works, Example/Analogy, Summary
+- [x] Add back button to return to homepage
+- [x] Show loading state while fetching
+- [x] Handle not-found case (topic doesn't exist yet)
