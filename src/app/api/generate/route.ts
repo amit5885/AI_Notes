@@ -169,7 +169,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const parsed = JSON.parse(jsonMatch[0]) as {
+    let parsed: {
       title?: string;
       intro?: string;
       keyConcepts?: string[];
@@ -177,6 +177,15 @@ export async function POST(request: Request) {
       example?: string;
       summary?: string;
     };
+
+    try {
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch {
+      return NextResponse.json(
+        { error: "Failed to parse AI response" },
+        { status: 500 }
+      );
+    }
 
     const content: NoteContent = {
       intro: parsed.intro ?? "",

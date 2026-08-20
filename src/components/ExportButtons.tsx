@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from "@react-pdf/renderer";
 import { downloadMarkdown } from "@/lib/export-utils";
 
@@ -77,9 +77,9 @@ function NotePDF({ note }: { note: NoteData }) {
 export function ExportButtons({ note }: { note: NoteData }) {
   const [isClient, setIsClient] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     setIsClient(true);
-  });
+  }, []);
 
   if (!isClient) {
     return null;
