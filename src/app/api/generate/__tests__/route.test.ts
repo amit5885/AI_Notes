@@ -56,11 +56,17 @@ describe("POST /api/generate", () => {
     expect(data.error).toBe("Topic is required");
   });
 
-  it("returns cached note when available", async () => {
+  it("returns cached note when available after expansion", async () => {
+    mockGenerateContent.mockResolvedValueOnce({
+      response: {
+        text: () => "Photosynthesis",
+      },
+    });
+
     const cachedNote = {
       id: "cached-1",
       topic: "photosynthesis",
-      rawQuery: "Photosynthesis",
+      rawQuery: "how plants make food",
       title: "Photosynthesis",
       content: {
         intro: "Cached intro.",
@@ -75,38 +81,44 @@ describe("POST /api/generate", () => {
 
     mockPrismaFindFirst.mockResolvedValue(cachedNote);
 
-    const request = createRequest({ topic: "Photosynthesis" });
+    const request = createRequest({ topic: "how plants make food" });
     const response = await POST(request);
     const data = await response.json();
 
     expect(response.status).toBe(200);
     expect(data.topic).toBe("photosynthesis");
     expect(data.content.intro).toBe("Cached intro.");
-    expect(mockGenerateContent).not.toHaveBeenCalled();
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
     expect(mockPrismaCreate).not.toHaveBeenCalled();
   });
 
-  it("generates a note and stores it in the database when not cached", async () => {
+  it("expands query and generates note when not cached", async () => {
     mockPrismaFindFirst.mockResolvedValue(null);
 
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () =>
-          JSON.stringify({
-            title: "Photosynthesis",
-            intro: "Photosynthesis is how plants make food.",
-            keyConcepts: ["Chlorophyll", "Sunlight", "CO2"],
-            howItWorks: "Plants use sunlight to convert CO2 into glucose.",
-            example: "Like a solar panel converting light into energy.",
-            summary: "Photosynthesis is essential for life on Earth.",
-          }),
-      },
-    });
+    mockGenerateContent
+      .mockResolvedValueOnce({
+        response: {
+          text: () => "Photosynthesis",
+        },
+      })
+      .mockResolvedValueOnce({
+        response: {
+          text: () =>
+            JSON.stringify({
+              title: "Photosynthesis",
+              intro: "Photosynthesis is how plants make food.",
+              keyConcepts: ["Chlorophyll", "Sunlight", "CO2"],
+              howItWorks: "Plants use sunlight to convert CO2 into glucose.",
+              example: "Like a solar panel converting light into energy.",
+              summary: "Photosynthesis is essential for life on Earth.",
+            }),
+        },
+      });
 
     const mockNote = {
       id: "test-id",
       topic: "photosynthesis",
-      rawQuery: "Photosynthesis",
+      rawQuery: "how plants make food",
       title: "Photosynthesis",
       content: {
         intro: "Photosynthesis is how plants make food.",
@@ -121,39 +133,44 @@ describe("POST /api/generate", () => {
 
     mockPrismaCreate.mockResolvedValue(mockNote);
 
-    const request = createRequest({ topic: "Photosynthesis" });
+    const request = createRequest({ topic: "how plants make food" });
     const response = await POST(request);
     const data = await response.json();
 
     expect(response.status).toBe(200);
     expect(data.topic).toBe("photosynthesis");
-    expect(data.title).toBe("Photosynthesis");
-    expect(data.content.intro).toBe("Photosynthesis is how plants make food.");
-    expect(mockGenerateContent).toHaveBeenCalledOnce();
+    expect(data.rawQuery).toBe("how plants make food");
+    expect(mockGenerateContent).toHaveBeenCalledTimes(2);
     expect(mockPrismaCreate).toHaveBeenCalledOnce();
   });
 
-  it("normalizes topic to slug format", async () => {
+  it("normalizes expanded topic to slug format", async () => {
     mockPrismaFindFirst.mockResolvedValue(null);
 
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () =>
-          JSON.stringify({
-            title: "Machine Learning",
-            intro: "ML is a subset of AI.",
-            keyConcepts: ["Neural Networks"],
-            howItWorks: "Models learn from data.",
-            example: "Like a child learning from examples.",
-            summary: "ML powers many modern applications.",
-          }),
-      },
-    });
+    mockGenerateContent
+      .mockResolvedValueOnce({
+        response: {
+          text: () => "Machine Learning",
+        },
+      })
+      .mockResolvedValueOnce({
+        response: {
+          text: () =>
+            JSON.stringify({
+              title: "Machine Learning",
+              intro: "ML is a subset of AI.",
+              keyConcepts: ["Neural Networks"],
+              howItWorks: "Models learn from data.",
+              example: "Like a child learning from examples.",
+              summary: "ML powers many modern applications.",
+            }),
+        },
+      });
 
     const mockNote = {
       id: "test-id-2",
-      topic: "what-is-machine-learning",
-      rawQuery: "What is Machine Learning?",
+      topic: "machine-learning",
+      rawQuery: "teaching computers to learn",
       title: "Machine Learning",
       content: {},
       diagramUrl: null,
@@ -162,31 +179,55 @@ describe("POST /api/generate", () => {
 
     mockPrismaCreate.mockResolvedValue(mockNote);
 
-    const request = createRequest({ topic: "What is Machine Learning?" });
+    const request = createRequest({ topic: "teaching computers to learn" });
     const response = await POST(request);
     const data = await response.json();
 
-    expect(data.topic).toBe("what-is-machine-learning");
+    expect(data.topic).toBe("machine-learning");
+    expect(data.rawQuery).toBe("teaching computers to learn");
     expect(mockPrismaCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          topic: "what-is-machine-learning",
-          rawQuery: "What is Machine Learning?",
+          topic: "machine-learning",
+          rawQuery: "teaching computers to learn",
         }),
       })
     );
   });
 
-  it("returns 500 when AI response cannot be parsed", async () => {
+  it("returns 500 when query expansion fails", async () => {
     mockPrismaFindFirst.mockResolvedValue(null);
 
     mockGenerateContent.mockResolvedValue({
       response: {
-        text: () => "This is not valid JSON",
+        text: () => "",
       },
     });
 
-    const request = createRequest({ topic: "Test" });
+    const request = createRequest({ topic: "test" });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Failed to expand query");
+  });
+
+  it("returns 500 when note generation response cannot be parsed", async () => {
+    mockPrismaFindFirst.mockResolvedValue(null);
+
+    mockGenerateContent
+      .mockResolvedValueOnce({
+        response: {
+          text: () => "Test Topic",
+        },
+      })
+      .mockResolvedValueOnce({
+        response: {
+          text: () => "This is not valid JSON",
+        },
+      });
+
+    const request = createRequest({ topic: "test" });
     const response = await POST(request);
     const data = await response.json();
 
@@ -197,19 +238,25 @@ describe("POST /api/generate", () => {
   it("returns 500 when database write fails", async () => {
     mockPrismaFindFirst.mockResolvedValue(null);
 
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () =>
-          JSON.stringify({
-            title: "Test",
-            intro: "Test intro",
-            keyConcepts: ["A"],
-            howItWorks: "Test how it works",
-            example: "Test example",
-            summary: "Test summary",
-          }),
-      },
-    });
+    mockGenerateContent
+      .mockResolvedValueOnce({
+        response: {
+          text: () => "Test Topic",
+        },
+      })
+      .mockResolvedValueOnce({
+        response: {
+          text: () =>
+            JSON.stringify({
+              title: "Test",
+              intro: "Test intro",
+              keyConcepts: ["A"],
+              howItWorks: "Test how it works",
+              example: "Test example",
+              summary: "Test summary",
+            }),
+        },
+      });
 
     mockPrismaCreate.mockRejectedValue(new Error("DB connection failed"));
 

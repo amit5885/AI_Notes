@@ -3,9 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createGeminiClient } from "@/lib/gemini";
 
-    const genAI = createGeminiClient();
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
 interface NoteContent {
   intro: string;
   keyConcepts: string[];
@@ -13,6 +10,22 @@ interface NoteContent {
   example: string;
   summary: string;
 }
+
+const EXPANSION_PROMPT = `You are a topic normalizer. Rewrite the user's input into a single, clear academic topic.
+
+Rules:
+- Return ONLY the topic name, nothing else
+- Use proper capitalization (e.g., "Photosynthesis", "Machine Learning")
+- Be concise (1-5 words max)
+- If the input is already a clear topic, return it as-is
+
+Examples:
+- "how plants make food" → "Photosynthesis"
+- "teaching computers to learn" → "Machine Learning"
+- "why is the sky blue" → "Rayleigh Scattering"
+- "what is DNA" → "DNA"
+
+Input: `;
 
 const NOTE_PROMPT = `You are an educational assistant creating study notes.
 
@@ -39,6 +52,19 @@ function normalizeTopic(raw: string): string {
     .replace(/^-|-$/g, "");
 }
 
+async function expandQuery(genAI: ReturnType<typeof createGeminiClient>, rawQuery: string): Promise<string> {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const result = await model.generateContent(`${EXPANSION_PROMPT}${rawQuery}`);
+  const response = result.response;
+  const text = response.text().trim();
+
+  if (!text) {
+    throw new Error("Empty expansion response");
+  }
+
+  return text;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -51,7 +77,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const slug = normalizeTopic(topic);
+    const genAI = createGeminiClient();
+
+    const expandedTopic = await expandQuery(genAI, topic.trim());
+    const slug = normalizeTopic(expandedTopic);
 
     const existing = await prisma.note.findFirst({
       where: { topic: slug },
@@ -70,7 +99,7 @@ export async function POST(request: Request) {
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(`${NOTE_PROMPT}\n\nTopic: ${topic}`);
+    const result = await model.generateContent(`${NOTE_PROMPT}\n\nTopic: ${expandedTopic}`);
     const response = result.response;
     const text = response.text();
 
@@ -103,7 +132,7 @@ export async function POST(request: Request) {
       data: {
         topic: slug,
         rawQuery: topic.trim(),
-        title: parsed.title ?? topic,
+        title: parsed.title ?? expandedTopic,
         content: content as unknown as Prisma.InputJsonValue,
       },
     });
@@ -119,6 +148,15 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Generation error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+
+    if (message.includes("expansion")) {
+      return NextResponse.json(
+        { error: "Failed to expand query" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to generate note" },
       { status: 500 }
