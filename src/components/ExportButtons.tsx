@@ -88,7 +88,7 @@ export function ExportButtons({ note }: { note: NoteData }) {
   const filename = `${note.title.toLowerCase().replace(/\s+/g, "-")}.pdf`;
 
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-wrap gap-3">
       <PDFDownloadLink
         document={<NotePDF note={note} />}
         fileName={filename}

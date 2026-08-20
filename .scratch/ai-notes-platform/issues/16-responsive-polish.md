@@ -4,11 +4,11 @@
 
 **Blocked by:** 06 (End-to-end happy path)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Test homepage on mobile (320px), tablet (768px), desktop (1024px+)
-- [ ] Test note page on all breakpoints
-- [ ] Test rate limit page on mobile
-- [ ] Ensure search bar is thumb-friendly on mobile
-- [ ] Ensure export buttons are accessible on small screens
-- [ ] Fix any overflow, spacing, or readability issues
+- [x] Test homepage on mobile (320px), tablet (768px), desktop (1024px+)
+- [x] Test note page on all breakpoints
+- [x] Test rate limit page on mobile
+- [x] Ensure search bar is thumb-friendly on mobile
+- [x] Ensure export buttons are accessible on small screens
+- [x] Fix any overflow, spacing, or readability issues

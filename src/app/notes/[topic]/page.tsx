@@ -96,27 +96,27 @@ export default function NotePage() {
   const content = note.content as NoteContent;
 
   return (
-    <main className="min-h-screen p-8 max-w-3xl mx-auto">
+    <main className="min-h-screen p-4 sm:p-8 max-w-3xl mx-auto">
       <Link
         href="/"
-        className="text-blue-600 hover:underline mb-8 inline-block"
+        className="text-blue-600 hover:underline mb-6 sm:mb-8 inline-block"
       >
         &larr; Back
       </Link>
 
       <article>
-        <h1 className="text-4xl font-bold mb-4">{note.title}</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold mb-4">{note.title}</h1>
         <div className="mb-6">
           <ExportButtons note={note} />
         </div>
 
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Introduction</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-2">Introduction</h2>
           <p className="text-gray-700">{content.intro}</p>
         </section>
 
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Key Concepts</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-2">Key Concepts</h2>
           <ul className="list-disc list-inside text-gray-700 space-y-1">
             {content.keyConcepts.map((concept, i) => (
               <li key={i}>{concept}</li>
@@ -125,7 +125,7 @@ export default function NotePage() {
         </section>
 
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">How It Works</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-2">How It Works</h2>
           <p className="text-gray-700 whitespace-pre-line">
             {content.howItWorks}
           </p>
@@ -139,12 +139,12 @@ export default function NotePage() {
         </section>
 
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Example / Analogy</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-2">Example / Analogy</h2>
           <p className="text-gray-700">{content.example}</p>
         </section>
 
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Summary</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-2">Summary</h2>
           <p className="text-gray-700">{content.summary}</p>
         </section>
       </article>
