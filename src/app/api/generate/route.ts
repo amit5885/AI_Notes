@@ -3,7 +3,7 @@ import { createGeminiClient } from "@/lib/gemini";
 import { dbRateLimiter } from "@/lib/rate-limiter";
 import { isTopicAllowed } from "@/lib/content-safety";
 import { prisma } from "@/lib/prisma";
-import { createNoteService, ExpansionError, ParseError } from "@/lib/note-service";
+import { createNoteService, ExpansionError, ParseError, SafetyBlockError } from "@/lib/note-service";
 
 export async function POST(request: Request) {
   try {
@@ -52,6 +52,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Failed to expand query" },
         { status: 500 }
+      );
+    }
+
+    if (error instanceof SafetyBlockError) {
+      return NextResponse.json(
+        { error: "This topic can't be generated. Try something else." },
+        { status: 400 }
       );
     }
 

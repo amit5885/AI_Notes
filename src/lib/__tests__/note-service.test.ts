@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createNoteService, ExpansionError, ParseError } from "../note-service";
+import { createNoteService, ExpansionError, ParseError, SafetyBlockError } from "../note-service";
+import { isSafetyBlock } from "@/lib/gemini";
 
 const {
   mockPrismaFindFirst,
@@ -35,7 +36,12 @@ describe("NoteService", () => {
   let service: ReturnType<typeof createNoteService>;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockGenerateContent.mockReset();
+    mockPrismaFindFirst.mockReset();
+    mockPrismaCreate.mockReset();
+    mockPrismaUpdate.mockReset();
+    vi.mocked(isSafetyBlock).mockReset();
+    vi.mocked(isSafetyBlock).mockReturnValue(false);
     mockGetGenerativeModel.mockReturnValue({
       generateContent: mockGenerateContent,
     });
@@ -135,6 +141,18 @@ describe("NoteService", () => {
     await expect(service.generate("test")).rejects.toThrow(ParseError);
   });
 
+  it("throws SafetyBlockError when note generation is blocked", async () => {
+    mockPrismaFindFirst.mockResolvedValue(null);
+    mockGenerateContent
+      .mockResolvedValueOnce({ response: { text: () => "expanded" } })
+      .mockResolvedValueOnce({ response: { text: () => "" } });
+    vi.mocked(isSafetyBlock)
+      .mockReturnValueOnce(false)  // expansion safety check passes
+      .mockReturnValueOnce(true);  // note generation safety check blocks
+
+    await expect(service.generate("test")).rejects.toThrow(SafetyBlockError);
+  });
+
   it("handles diagram generation failure gracefully", async () => {
     mockPrismaFindFirst.mockResolvedValue(null);
     mockGenerateContent
@@ -148,7 +166,7 @@ describe("NoteService", () => {
             }),
         },
       })
-      .mockRejectedValue(new Error("Diagram failed"));
+      .mockRejectedValueOnce(new Error("Diagram failed"));
     mockPrismaCreate.mockResolvedValue({
       id: "3", topic: "topic", rawQuery: "t", title: "T",
       content: {}, diagramUrl: null, createdAt: new Date(),

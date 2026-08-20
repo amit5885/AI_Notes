@@ -19,6 +19,13 @@ export class ParseError extends Error {
   }
 }
 
+export class SafetyBlockError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SafetyBlockError";
+  }
+}
+
 const EXPANSION_PROMPT = `You are a topic normalizer. Rewrite the user's input into a single, clear academic topic.
 
 Rules:
@@ -151,7 +158,7 @@ export function createNoteService(deps: NoteServiceDependencies) {
     const response = result.response;
 
     if (isSafetyBlock(response)) {
-      throw new ParseError("Content blocked by safety filter");
+      throw new SafetyBlockError("Content blocked by safety filter");
     }
 
     const text = response.text();

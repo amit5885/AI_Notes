@@ -36,7 +36,7 @@ vi.mock("@/lib/note-service", async () => {
 });
 
 import { POST } from "../route";
-import { ExpansionError, ParseError } from "@/lib/note-service";
+import { ExpansionError, ParseError, SafetyBlockError } from "@/lib/note-service";
 
 function createRequest(body: unknown, headers?: Record<string, string>): Request {
   return new Request("http://localhost/api/generate", {
@@ -138,6 +138,17 @@ describe("POST /api/generate", () => {
 
     expect(response.status).toBe(500);
     expect(data.error).toBe("Failed to generate note");
+  });
+
+  it("returns 400 when AI safety block fires", async () => {
+    mockGenerate.mockRejectedValue(new SafetyBlockError("Content blocked by safety filter"));
+
+    const request = createRequest({ topic: "test" });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("This topic can't be generated. Try something else.");
   });
 
   it("returns 500 on unknown error", async () => {
