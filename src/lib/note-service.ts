@@ -77,7 +77,7 @@ export function createNoteService(deps: NoteServiceDependencies) {
 
   async function expandQuery(rawQuery: string): Promise<string> {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-3.6-flash",
       safetySettings: getSafetySettings(),
     });
     const result = await model.generateContent(`${EXPANSION_PROMPT}${rawQuery}`);
@@ -97,7 +97,7 @@ export function createNoteService(deps: NoteServiceDependencies) {
   async function generateDiagram(topic: string): Promise<string | null> {
     try {
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash-preview-image-generation",
+        model: "gemini-3.6-flash-preview-image-generation",
         safetySettings: getSafetySettings(),
       });
       const result = await model.generateContent(
@@ -152,7 +152,7 @@ export function createNoteService(deps: NoteServiceDependencies) {
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-3.6-flash",
       safetySettings: getSafetySettings(),
     });
     const result = await model.generateContent(`${NOTE_PROMPT}\n\nTopic: ${expandedTopic}`);
