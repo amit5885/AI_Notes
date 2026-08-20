@@ -1,105 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-import { createGeminiClient, getSafetySettings, isSafetyBlock } from "@/lib/gemini";
+import { createGeminiClient } from "@/lib/gemini";
 import { dbRateLimiter } from "@/lib/rate-limiter";
 import { isTopicAllowed } from "@/lib/content-safety";
-import { normalizeSlug } from "@/lib/slug";
-import { NoteContent } from "@/types/note";
-
-const EXPANSION_PROMPT = `You are a topic normalizer. Rewrite the user's input into a single, clear academic topic.
-
-Rules:
-- Return ONLY the topic name, nothing else
-- Use proper capitalization (e.g., "Photosynthesis", "Machine Learning")
-- Be concise (1-5 words max)
-- If the input is already a clear topic, return it as-is
-
-Examples:
-- "how plants make food" → "Photosynthesis"
-- "teaching computers to learn" → "Machine Learning"
-- "why is the sky blue" → "Rayleigh Scattering"
-- "what is DNA" → "DNA"
-
-Input: `;
-
-const NOTE_PROMPT = `You are an educational assistant creating study notes.
-
-Generate a note with these sections in valid JSON format:
-{
-  "title": "concise title",
-  "intro": "1-2 sentence introduction",
-  "keyConcepts": ["concept 1", "concept 2", "concept 3"],
-  "howItWorks": "2-3 paragraphs explaining the process",
-  "example": "real-world comparison or analogy",
-  "summary": "2-3 sentence wrap-up",
-  "relatedTopics": ["topic 1", "topic 2", "topic 3", "topic 4"]
-}
-
-Tone: Simple, clear, student-friendly.
-Length: ~500-800 words total across all sections.
-relatedTopics: 3-5 topics for further learning (e.g., prerequisites, advanced topics, related fields).
-Return ONLY the JSON object, no markdown fences or extra text.`;
-
-const DIAGRAM_PROMPT = `Generate a clean, educational concept diagram for this topic.
-Style: Simple flowchart or process diagram with clear labels.
-Colors: Use a light background with contrasting colors for readability.
-Layout: Horizontal or vertical flow, well-spaced elements.
-Text: Include brief labels on each step or concept.
-No decorative elements - focus on educational clarity.`;
-
-async function expandQuery(genAI: ReturnType<typeof createGeminiClient>, rawQuery: string): Promise<string> {
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    safetySettings: getSafetySettings(),
-  });
-  const result = await model.generateContent(`${EXPANSION_PROMPT}${rawQuery}`);
-  const response = result.response;
-
-  if (isSafetyBlock(response)) {
-    throw new Error("Content blocked by safety filter");
-  }
-
-  const text = response.text().trim();
-
-  if (!text) {
-    throw new Error("Empty expansion response");
-  }
-
-  return text;
-}
-
-async function generateDiagram(
-  genAI: ReturnType<typeof createGeminiClient>,
-  topic: string
-): Promise<string | null> {
-  try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-preview-image-generation",
-      safetySettings: getSafetySettings(),
-    });
-    const result = await model.generateContent(
-      `${DIAGRAM_PROMPT}\n\nTopic: ${topic}`
-    );
-    const response = result.response;
-
-    if (isSafetyBlock(response)) {
-      console.error("Diagram generation blocked by safety filter");
-      return null;
-    }
-
-    const images = (response as unknown as { images?: Array<{ data: string; mimeType: string }> }).images;
-    if (images && images.length > 0) {
-      const image = images[0];
-      return `data:${image.mimeType};base64,${image.data}`;
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Diagram generation failed:", error);
-    return null;
-  }
-}
+import { prisma } from "@/lib/prisma";
+import { createNoteService, ExpansionError, ParseError } from "@/lib/note-service";
 
 export async function POST(request: Request) {
   try {
@@ -137,112 +41,23 @@ export async function POST(request: Request) {
     }
 
     const genAI = createGeminiClient();
+    const service = createNoteService({ genAI, prisma });
+    const note = await service.generate(topic.trim());
 
-    const expandedTopic = await expandQuery(genAI, topic.trim());
-    const slug = normalizeSlug(expandedTopic);
-
-    const existing = await prisma.note.findFirst({
-      where: { topic: slug },
-    });
-
-    if (existing) {
-      return NextResponse.json({
-        id: existing.id,
-        topic: existing.topic,
-        rawQuery: existing.rawQuery,
-        title: existing.title,
-        content: existing.content,
-        diagramUrl: existing.diagramUrl,
-        createdAt: existing.createdAt,
-      });
-    }
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      safetySettings: getSafetySettings(),
-    });
-    const result = await model.generateContent(`${NOTE_PROMPT}\n\nTopic: ${expandedTopic}`);
-    const response = result.response;
-
-    if (isSafetyBlock(response)) {
-      return NextResponse.json(
-        { error: "This topic can't be generated. Try something else." },
-        { status: 400 }
-      );
-    }
-
-    const text = response.text();
-
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return NextResponse.json(
-        { error: "Failed to parse AI response" },
-        { status: 500 }
-      );
-    }
-
-    let parsed: {
-      title?: string;
-      intro?: string;
-      keyConcepts?: string[];
-      howItWorks?: string;
-      example?: string;
-      summary?: string;
-      relatedTopics?: string[];
-    };
-
-    try {
-      parsed = JSON.parse(jsonMatch[0]);
-    } catch {
-      return NextResponse.json(
-        { error: "Failed to parse AI response" },
-        { status: 500 }
-      );
-    }
-
-    const content: NoteContent = {
-      intro: parsed.intro ?? "",
-      keyConcepts: parsed.keyConcepts ?? [],
-      howItWorks: parsed.howItWorks ?? "",
-      example: parsed.example ?? "",
-      summary: parsed.summary ?? "",
-      relatedTopics: parsed.relatedTopics ?? [],
-    };
-
-    const note = await prisma.note.create({
-      data: {
-        topic: slug,
-        rawQuery: topic.trim(),
-        title: parsed.title ?? expandedTopic,
-        content: content as unknown as Prisma.InputJsonValue,
-      },
-    });
-
-    const diagramUrl = await generateDiagram(genAI, expandedTopic);
-
-    if (diagramUrl) {
-      await prisma.note.update({
-        where: { id: note.id },
-        data: { diagramUrl },
-      });
-    }
-
-    return NextResponse.json({
-      id: note.id,
-      topic: note.topic,
-      rawQuery: note.rawQuery,
-      title: note.title,
-      content: note.content,
-      diagramUrl: diagramUrl ?? note.diagramUrl,
-      createdAt: note.createdAt,
-    });
+    return NextResponse.json(note);
   } catch (error) {
     console.error("Generation error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
 
-    if (message.includes("expansion")) {
+    if (error instanceof ExpansionError) {
       return NextResponse.json(
         { error: "Failed to expand query" },
+        { status: 500 }
+      );
+    }
+
+    if (error instanceof ParseError) {
+      return NextResponse.json(
+        { error: "Failed to generate note" },
         { status: 500 }
       );
     }
