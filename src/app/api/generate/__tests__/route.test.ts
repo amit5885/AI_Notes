@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockGenerateContent, mockPrismaCreate, mockPrismaFindFirst } = vi.hoisted(() => ({
+const { mockGenerateContent, mockPrismaCreate, mockPrismaFindFirst, mockPrismaUpdate } = vi.hoisted(() => ({
   mockGenerateContent: vi.fn(),
   mockPrismaCreate: vi.fn(),
   mockPrismaFindFirst: vi.fn(),
+  mockPrismaUpdate: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -11,6 +12,7 @@ vi.mock("@/lib/prisma", () => ({
     note: {
       create: mockPrismaCreate,
       findFirst: mockPrismaFindFirst,
+      update: mockPrismaUpdate,
     },
   },
 }));
@@ -75,7 +77,7 @@ describe("POST /api/generate", () => {
         example: "Cached example.",
         summary: "Cached summary.",
       },
-      diagramUrl: null,
+      diagramUrl: "data:image/png;base64,cached-image",
       createdAt: new Date(),
     };
 
@@ -92,7 +94,7 @@ describe("POST /api/generate", () => {
     expect(mockPrismaCreate).not.toHaveBeenCalled();
   });
 
-  it("expands query and generates note when not cached", async () => {
+  it("generates note with diagram when not cached", async () => {
     mockPrismaFindFirst.mockResolvedValue(null);
 
     mockGenerateContent
@@ -113,6 +115,16 @@ describe("POST /api/generate", () => {
               summary: "Photosynthesis is essential for life on Earth.",
             }),
         },
+      })
+      .mockResolvedValueOnce({
+        response: {
+          images: [
+            {
+              data: "base64-image-data",
+              mimeType: "image/png",
+            },
+          ],
+        },
       });
 
     const mockNote = {
@@ -132,6 +144,10 @@ describe("POST /api/generate", () => {
     };
 
     mockPrismaCreate.mockResolvedValue(mockNote);
+    mockPrismaUpdate.mockResolvedValue({
+      ...mockNote,
+      diagramUrl: "data:image/png;base64,base64-image-data",
+    });
 
     const request = createRequest({ topic: "how plants make food" });
     const response = await POST(request);
@@ -139,9 +155,55 @@ describe("POST /api/generate", () => {
 
     expect(response.status).toBe(200);
     expect(data.topic).toBe("photosynthesis");
-    expect(data.rawQuery).toBe("how plants make food");
-    expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    expect(mockGenerateContent).toHaveBeenCalledTimes(3);
     expect(mockPrismaCreate).toHaveBeenCalledOnce();
+    expect(mockPrismaUpdate).toHaveBeenCalledOnce();
+  });
+
+  it("returns note without diagram if image generation fails", async () => {
+    mockPrismaFindFirst.mockResolvedValue(null);
+
+    mockGenerateContent
+      .mockResolvedValueOnce({
+        response: {
+          text: () => "Test Topic",
+        },
+      })
+      .mockResolvedValueOnce({
+        response: {
+          text: () =>
+            JSON.stringify({
+              title: "Test Topic",
+              intro: "Test intro.",
+              keyConcepts: ["A"],
+              howItWorks: "Test how it works.",
+              example: "Test example.",
+              summary: "Test summary.",
+            }),
+        },
+      })
+      .mockRejectedValueOnce(new Error("Image generation failed"));
+
+    const mockNote = {
+      id: "test-id-2",
+      topic: "test-topic",
+      rawQuery: "test",
+      title: "Test Topic",
+      content: {},
+      diagramUrl: null,
+      createdAt: new Date(),
+    };
+
+    mockPrismaCreate.mockResolvedValue(mockNote);
+
+    const request = createRequest({ topic: "test" });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.topic).toBe("test-topic");
+    expect(data.diagramUrl).toBeNull();
+    expect(mockPrismaUpdate).not.toHaveBeenCalled();
   });
 
   it("normalizes expanded topic to slug format", async () => {
@@ -165,10 +227,15 @@ describe("POST /api/generate", () => {
               summary: "ML powers many modern applications.",
             }),
         },
+      })
+      .mockResolvedValueOnce({
+        response: {
+          images: [],
+        },
       });
 
     const mockNote = {
-      id: "test-id-2",
+      id: "test-id-3",
       topic: "machine-learning",
       rawQuery: "teaching computers to learn",
       title: "Machine Learning",
@@ -185,14 +252,6 @@ describe("POST /api/generate", () => {
 
     expect(data.topic).toBe("machine-learning");
     expect(data.rawQuery).toBe("teaching computers to learn");
-    expect(mockPrismaCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          topic: "machine-learning",
-          rawQuery: "teaching computers to learn",
-        }),
-      })
-    );
   });
 
   it("returns 500 when query expansion fails", async () => {

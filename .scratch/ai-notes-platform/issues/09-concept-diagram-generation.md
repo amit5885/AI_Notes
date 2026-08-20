@@ -4,10 +4,10 @@
 
 **Blocked by:** 04 (Note generation API)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Call Gemini image generation (or DALL-E fallback) after text generation
-- [ ] Prompt for educational diagrams (flowcharts, process diagrams, not illustrations)
-- [ ] Store image URL in Note.diagramUrl
-- [ ] Display diagram in "How It Works" section of note page
-- [ ] Handle image generation failures gracefully (note still works without diagram)
+- [x] Call Gemini image generation after text generation
+- [x] Prompt for educational diagrams (flowcharts, process diagrams, not illustrations)
+- [x] Store image URL in Note.diagramUrl
+- [x] Display diagram in "How It Works" section of note page
+- [x] Handle image generation failures gracefully (note still works without diagram)

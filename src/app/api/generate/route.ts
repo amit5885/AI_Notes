@@ -43,6 +43,13 @@ Tone: Simple, clear, student-friendly.
 Length: ~500-800 words total across all sections.
 Return ONLY the JSON object, no markdown fences or extra text.`;
 
+const DIAGRAM_PROMPT = `Generate a clean, educational concept diagram for this topic.
+Style: Simple flowchart or process diagram with clear labels.
+Colors: Use a light background with contrasting colors for readability.
+Layout: Horizontal or vertical flow, well-spaced elements.
+Text: Include brief labels on each step or concept.
+No decorative elements - focus on educational clarity.`;
+
 function normalizeTopic(raw: string): string {
   return raw
     .toLowerCase()
@@ -63,6 +70,32 @@ async function expandQuery(genAI: ReturnType<typeof createGeminiClient>, rawQuer
   }
 
   return text;
+}
+
+async function generateDiagram(
+  genAI: ReturnType<typeof createGeminiClient>,
+  topic: string
+): Promise<string | null> {
+  try {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-preview-image-generation",
+    });
+    const result = await model.generateContent(
+      `${DIAGRAM_PROMPT}\n\nTopic: ${topic}`
+    );
+    const response = result.response;
+
+    const images = (response as unknown as { images?: Array<{ data: string; mimeType: string }> }).images;
+    if (images && images.length > 0) {
+      const image = images[0];
+      return `data:${image.mimeType};base64,${image.data}`;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Diagram generation failed:", error);
+    return null;
+  }
 }
 
 export async function POST(request: Request) {
@@ -137,13 +170,22 @@ export async function POST(request: Request) {
       },
     });
 
+    const diagramUrl = await generateDiagram(genAI, expandedTopic);
+
+    if (diagramUrl) {
+      await prisma.note.update({
+        where: { id: note.id },
+        data: { diagramUrl },
+      });
+    }
+
     return NextResponse.json({
       id: note.id,
       topic: note.topic,
       rawQuery: note.rawQuery,
       title: note.title,
       content: note.content,
-      diagramUrl: note.diagramUrl,
+      diagramUrl: diagramUrl ?? note.diagramUrl,
       createdAt: note.createdAt,
     });
   } catch (error) {
