@@ -4,10 +4,10 @@
 
 **Blocked by:** 02 (Database schema)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create RateLimit model or in-memory tracking (IP + timestamps)
-- [ ] Middleware or check in `/api/generate` to count requests per IP
-- [ ] Return HTTP 429 with error message when limit exceeded
-- [ ] Include retry-after header with seconds remaining
-- [ ] Test: 21st request within an hour gets blocked
+- [x] Create in-memory tracking (IP + timestamps)
+- [x] Check in `/api/generate` to count requests per IP
+- [x] Return HTTP 429 with error message when limit exceeded
+- [x] Include retry-after header with seconds remaining
+- [x] Test: 21st request within an hour gets blocked

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createGeminiClient } from "@/lib/gemini";
+import { rateLimiter } from "@/lib/rate-limiter";
 
 interface NoteContent {
   intro: string;
@@ -107,6 +108,21 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Topic is required" },
         { status: 400 }
+      );
+    }
+
+    const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
+    const rateLimitResult = rateLimiter.check(ip);
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.retryAfter),
+          },
+        }
       );
     }
 
