@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { ExportButtons } from "@/components/ExportButtons";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { NoteSkeleton } from "@/components/NoteSkeleton";
 import { RelatedTopics } from "@/components/RelatedTopics";
 import { NoteData } from "@/types/note";
 
@@ -59,11 +59,7 @@ export default function NotePage() {
   }, [topic, rawQuery, router]);
 
   if (loading) {
-    return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6">
-        <LoadingSpinner topic={rawQuery} />
-      </main>
-    );
+    return <NoteSkeleton />;
   }
 
   if (error || !note) {
