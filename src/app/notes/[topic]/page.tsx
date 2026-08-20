@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
+import { ExportButtons } from "@/components/ExportButtons";
 
 interface NoteContent {
   intro: string;
@@ -98,7 +99,10 @@ export default function NotePage() {
       </Link>
 
       <article>
-        <h1 className="text-4xl font-bold mb-6">{note.title}</h1>
+        <h1 className="text-4xl font-bold mb-4">{note.title}</h1>
+        <div className="mb-6">
+          <ExportButtons note={note} />
+        </div>
 
         <section className="mb-6">
           <h2 className="text-xl font-semibold mb-2">Introduction</h2>

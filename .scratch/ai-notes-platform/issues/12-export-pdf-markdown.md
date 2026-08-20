@@ -4,10 +4,10 @@
 
 **Blocked by:** 05 (Note display page)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Add "Download PDF" button that renders note as styled PDF
-- [ ] Add "Download Markdown" button that converts note to `.md` format
-- [ ] Install PDF generation library (`@react-pdf/renderer` or `puppeteer`)
-- [ ] Style PDF to match on-page appearance
-- [ ] Test both exports download correctly
+- [x] Add "Download PDF" button that renders note as styled PDF
+- [x] Add "Download Markdown" button that converts note to `.md` format
+- [x] Install PDF generation library (`@react-pdf/renderer`)
+- [x] Style PDF to match on-page appearance
+- [x] Test both exports download correctly
