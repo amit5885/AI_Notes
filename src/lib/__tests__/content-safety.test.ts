@@ -44,6 +44,26 @@ describe("content-safety", () => {
       expect(result.blocked).toBe(false);
       expect(result.keyword).toBeNull();
     });
+
+    it("does not false positive on educational topics containing blocked substrings", () => {
+      expect(isTopicAllowed("pharmacology").blocked).toBe(false);
+      expect(isTopicAllowed("hackathon").blocked).toBe(false);
+      expect(isTopicAllowed("hacker culture").blocked).toBe(false);
+      expect(isTopicAllowed("nuclear weapons history").blocked).toBe(false);
+    });
+
+    it("still blocks exact word matches", () => {
+      expect(isTopicAllowed("drug").blocked).toBe(true);
+      expect(isTopicAllowed("hack").blocked).toBe(true);
+      expect(isTopicAllowed("kill").blocked).toBe(true);
+      expect(isTopicAllowed("bomb").blocked).toBe(true);
+    });
+
+    it("blocks compound phrases with blocked words", () => {
+      expect(isTopicAllowed("how to hack a computer").blocked).toBe(true);
+      expect(isTopicAllowed("making a bomb at home").blocked).toBe(true);
+      expect(isTopicAllowed("gun safety training").blocked).toBe(true);
+    });
   });
 
   describe("BLOCKED_KEYWORDS", () => {

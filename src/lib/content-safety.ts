@@ -33,11 +33,16 @@ interface SafetyCheckResult {
   keyword: string | null;
 }
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function isTopicAllowed(topic: string): SafetyCheckResult {
   const normalized = topic.toLowerCase();
 
   for (const keyword of BLOCKED_KEYWORDS) {
-    if (normalized.includes(keyword)) {
+    const regex = new RegExp(`\\b${escapeRegex(keyword)}\\b`, "i");
+    if (regex.test(normalized)) {
       return { blocked: true, keyword };
     }
   }
