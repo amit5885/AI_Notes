@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { ExportButtons } from "@/components/ExportButtons";
+import { LineMinimap } from "@/components/LineMinimap";
 import { NoteSkeleton } from "@/components/NoteSkeleton";
 import { RelatedTopics } from "@/components/RelatedTopics";
 import { NoteData } from "@/types/note";
@@ -80,6 +81,8 @@ export default function NotePage() {
 
   return (
     <main className="min-h-screen px-6 py-12 max-w-[42rem] mx-auto">
+      <LineMinimap />
+
       <Link
         href="/"
         className="text-sm text-muted hover:text-ink transition-colors inline-flex items-center gap-1 mb-10"
@@ -99,14 +102,14 @@ export default function NotePage() {
         </header>
 
         <div className="space-y-8">
-          <section>
+          <section data-minimap="intro">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
               Introduction
             </h2>
             <p className="text-ink leading-relaxed">{content.intro}</p>
           </section>
 
-          <section>
+          <section data-minimap="concepts">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
               Key Concepts
             </h2>
@@ -122,7 +125,7 @@ export default function NotePage() {
             </ul>
           </section>
 
-          <section>
+          <section data-minimap="how-it-works">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
               How It Works
             </h2>
@@ -138,14 +141,14 @@ export default function NotePage() {
             )}
           </section>
 
-          <section>
+          <section data-minimap="example">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
               Example / Analogy
             </h2>
             <p className="text-ink leading-relaxed">{content.example}</p>
           </section>
 
-          <section>
+          <section data-minimap="summary">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
               Summary
             </h2>
