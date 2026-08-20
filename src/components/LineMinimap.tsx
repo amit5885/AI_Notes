@@ -13,6 +13,7 @@ export function LineMinimap() {
   const [sections, setSections] = useState<Section[]>([]);
   const [visible, setVisible] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -65,38 +66,67 @@ export function LineMinimap() {
     typeof window !== "undefined" ? window.innerHeight : 800;
   const trackHeight = viewportHeight * 0.6;
 
-  const segmentTop = (sections[activeIndex]?.top ?? 0) / totalHeight;
-  const segmentHeight = Math.max(
-    (sections[activeIndex]?.height ?? 0) / totalHeight,
-    0.05
-  );
-
   return (
     <div
-      className="fixed left-4 top-1/2 -translate-y-1/2 z-40 hidden md:block"
+      className="fixed left-4 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-end gap-0"
       style={{ height: trackHeight }}
       role="presentation"
       aria-hidden="true"
     >
-      <div
-        className="relative w-[3px] rounded-full overflow-hidden"
-        style={{
-          height: trackHeight,
-          backgroundColor: "var(--color-border)",
-        }}
-      >
-        <div
-          className="absolute left-0 w-full rounded-full"
-          style={{
-            top: `${segmentTop * 100}%`,
-            height: `${segmentHeight * 100}%`,
-            backgroundColor: "var(--color-primary)",
-            transition: reducedMotion
-              ? "none"
-              : "top 200ms ease-out, height 200ms ease-out",
-          }}
-        />
-      </div>
+      {sections.map((section, i) => {
+        const isActive = i === activeIndex;
+        const isHovered = i === hoveredIndex;
+        const sectionRatio = section.height / totalHeight;
+
+        return (
+          <div
+            key={section.id}
+            className="flex items-center justify-end group cursor-default"
+            style={{ flex: sectionRatio }}
+            onMouseEnter={() => setHoveredIndex(i)}
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
+            <div
+              className="flex items-center gap-2"
+              style={{
+                transition: reducedMotion
+                  ? "none"
+                  : "transform 150ms ease-out",
+                transform: isHovered && !isActive ? "scaleX(1.3)" : "scaleX(1)",
+                transformOrigin: "right center",
+              }}
+            >
+              <span
+                className="text-[10px] leading-none select-none whitespace-nowrap opacity-0 group-hover:opacity-100"
+                style={{
+                  color: isActive
+                    ? "var(--color-primary)"
+                    : "var(--color-muted)",
+                  transition: reducedMotion ? "none" : "opacity 150ms ease-out",
+                  fontWeight: isActive ? 600 : 400,
+                }}
+              >
+                {section.id}
+              </span>
+              <div
+                style={{
+                  width: isActive ? 18 : isHovered ? 14 : 8,
+                  height: 2,
+                  borderRadius: 1,
+                  backgroundColor: isActive
+                    ? "var(--color-primary)"
+                    : isHovered
+                      ? "var(--color-muted)"
+                      : "var(--color-border)",
+                  transition: reducedMotion
+                    ? "none"
+                    : "width 150ms ease-out, background-color 150ms ease-out",
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
