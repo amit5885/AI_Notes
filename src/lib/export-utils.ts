@@ -1,17 +1,6 @@
-interface NoteContent {
-  intro: string;
-  keyConcepts: string[];
-  howItWorks: string;
-  example: string;
-  summary: string;
-}
+import { NoteExport } from "@/types/note";
 
-interface NoteData {
-  title: string;
-  content: NoteContent;
-}
-
-export function convertToMarkdown(note: NoteData): string {
+export function convertToMarkdown(note: NoteExport): string {
   const { title, content } = note;
 
   let markdown = `# ${title}\n\n`;
@@ -47,7 +36,7 @@ export function downloadFile(content: string, filename: string, mimeType: string
   URL.revokeObjectURL(url);
 }
 
-export function downloadMarkdown(note: NoteData): void {
+export function downloadMarkdown(note: NoteExport): void {
   const markdown = convertToMarkdown(note);
   const filename = `${note.title.toLowerCase().replace(/\s+/g, "-")}.md`;
   downloadFile(markdown, filename, "text/markdown");

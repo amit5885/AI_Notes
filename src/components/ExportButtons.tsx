@@ -3,19 +3,7 @@
 import { useState, useEffect } from "react";
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from "@react-pdf/renderer";
 import { downloadMarkdown } from "@/lib/export-utils";
-
-interface NoteContent {
-  intro: string;
-  keyConcepts: string[];
-  howItWorks: string;
-  example: string;
-  summary: string;
-}
-
-interface NoteData {
-  title: string;
-  content: NoteContent;
-}
+import { NoteExport } from "@/types/note";
 
 const styles = StyleSheet.create({
   page: {
@@ -45,7 +33,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function NotePDF({ note }: { note: NoteData }) {
+function NotePDF({ note }: { note: NoteExport }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -74,7 +62,7 @@ function NotePDF({ note }: { note: NoteData }) {
   );
 }
 
-export function ExportButtons({ note }: { note: NoteData }) {
+export function ExportButtons({ note }: { note: NoteExport }) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {

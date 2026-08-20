@@ -5,24 +5,7 @@ import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { ExportButtons } from "@/components/ExportButtons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-
-interface NoteContent {
-  intro: string;
-  keyConcepts: string[];
-  howItWorks: string;
-  example: string;
-  summary: string;
-}
-
-interface Note {
-  id: string;
-  topic: string;
-  rawQuery: string;
-  title: string;
-  content: NoteContent;
-  diagramUrl: string | null;
-  createdAt: string;
-}
+import { NoteData } from "@/types/note";
 
 export default function NotePage() {
   const params = useParams();
@@ -31,7 +14,7 @@ export default function NotePage() {
   const topic = params.topic as string;
   const rawQuery = searchParams.get("q") ?? topic;
 
-  const [note, setNote] = useState<Note | null>(null);
+  const [note, setNote] = useState<NoteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,7 +76,7 @@ export default function NotePage() {
     );
   }
 
-  const content = note.content as NoteContent;
+  const content = note.content;
 
   return (
     <main className="min-h-screen p-4 sm:p-8 max-w-3xl mx-auto">

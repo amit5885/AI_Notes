@@ -4,14 +4,7 @@ import { Prisma } from "@prisma/client";
 import { createGeminiClient } from "@/lib/gemini";
 import { rateLimiter } from "@/lib/rate-limiter";
 import { isTopicAllowed } from "@/lib/content-safety";
-
-interface NoteContent {
-  intro: string;
-  keyConcepts: string[];
-  howItWorks: string;
-  example: string;
-  summary: string;
-}
+import { NoteContent } from "@/types/note";
 
 const EXPANSION_PROMPT = `You are a topic normalizer. Rewrite the user's input into a single, clear academic topic.
 

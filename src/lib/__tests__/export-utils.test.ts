@@ -1,13 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { convertToMarkdown } from "../export-utils";
-
-interface NoteContent {
-  intro: string;
-  keyConcepts: string[];
-  howItWorks: string;
-  example: string;
-  summary: string;
-}
+import { NoteContent } from "@/types/note";
 
 describe("export-utils", () => {
   describe("convertToMarkdown", () => {
