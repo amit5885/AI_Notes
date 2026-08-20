@@ -13,8 +13,9 @@ export function LineMinimap() {
   const [sections, setSections] = useState<Section[]>([]);
   const [visible, setVisible] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const measured = Array.from(
@@ -54,8 +55,18 @@ export function LineMinimap() {
       .querySelectorAll("[data-minimap]")
       .forEach((el) => observerRef.current?.observe(el));
 
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(docHeight > 0 ? scrollTop / docHeight : 0);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
     return () => {
       observerRef.current?.disconnect();
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -64,69 +75,99 @@ export function LineMinimap() {
   const totalHeight = sections.reduce((sum, s) => sum + s.height, 0);
   const viewportHeight =
     typeof window !== "undefined" ? window.innerHeight : 800;
-  const trackHeight = viewportHeight * 0.6;
+  const trackHeight = viewportHeight * 0.7;
+
+  const mmCount = 70;
+  const cmInterval = 10;
+
+  const activeSection = sections[activeIndex];
+  const activeStart = activeSection ? activeSection.top / totalHeight : 0;
+  const activeEnd = activeSection
+    ? (activeSection.top + activeSection.height) / totalHeight
+    : 0;
 
   return (
     <div
-      className="fixed left-4 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-end gap-0"
+      className="fixed left-3 top-1/2 -translate-y-1/2 z-40 hidden md:block"
       style={{ height: trackHeight }}
       role="presentation"
       aria-hidden="true"
     >
-      {sections.map((section, i) => {
-        const isActive = i === activeIndex;
-        const isHovered = i === hoveredIndex;
-        const sectionRatio = section.height / totalHeight;
+      <div
+        ref={trackRef}
+        className="relative"
+        style={{ height: trackHeight, width: 24 }}
+      >
+        {Array.from({ length: mmCount + 1 }, (_, i) => {
+          const pos = i / mmCount;
+          const isCm = i % cmInterval === 0;
+          const isInActive = pos >= activeStart && pos <= activeEnd;
+          const isNearScroll =
+            Math.abs(pos - scrollProgress) < 0.02;
 
-        return (
-          <div
-            key={section.id}
-            className="flex items-center justify-end group cursor-default"
-            style={{ flex: sectionRatio }}
-            onMouseEnter={() => setHoveredIndex(i)}
-            onMouseLeave={() => setHoveredIndex(null)}
-          >
+          const tickWidth = isCm ? 16 : 6;
+          const tickHeight = isCm ? 1.5 : 1;
+
+          let tickColor = "var(--color-border)";
+          if (isInActive) {
+            tickColor = "var(--color-primary)";
+          } else if (isNearScroll) {
+            tickColor = "var(--color-muted)";
+          }
+
+          return (
             <div
-              className="flex items-center gap-2"
+              key={i}
+              className="absolute right-0 flex items-center"
               style={{
+                top: `${pos * 100}%`,
+                height: 0,
                 transition: reducedMotion
                   ? "none"
-                  : "transform 150ms ease-out",
-                transform: isHovered && !isActive ? "scaleX(1.3)" : "scaleX(1)",
-                transformOrigin: "right center",
+                  : "opacity 150ms ease-out",
               }}
             >
-              <span
-                className="text-[10px] leading-none select-none whitespace-nowrap opacity-0 group-hover:opacity-100"
-                style={{
-                  color: isActive
-                    ? "var(--color-primary)"
-                    : "var(--color-muted)",
-                  transition: reducedMotion ? "none" : "opacity 150ms ease-out",
-                  fontWeight: isActive ? 600 : 400,
-                }}
-              >
-                {section.id}
-              </span>
+              {isCm && (
+                <span
+                  className="absolute text-[8px] leading-none select-none whitespace-nowrap"
+                  style={{
+                    right: tickWidth + 4,
+                    color: isInActive
+                      ? "var(--color-primary)"
+                      : "var(--color-muted)",
+                    opacity: isInActive ? 1 : 0.5,
+                    fontWeight: isInActive ? 600 : 400,
+                  }}
+                >
+                  {Math.round(pos * 100)}
+                </span>
+              )}
               <div
                 style={{
-                  width: isActive ? 18 : isHovered ? 14 : 8,
-                  height: 2,
-                  borderRadius: 1,
-                  backgroundColor: isActive
-                    ? "var(--color-primary)"
-                    : isHovered
-                      ? "var(--color-muted)"
-                      : "var(--color-border)",
+                  width: tickWidth,
+                  height: tickHeight,
+                  backgroundColor: tickColor,
+                  borderRadius: 0.5,
                   transition: reducedMotion
                     ? "none"
-                    : "width 150ms ease-out, background-color 150ms ease-out",
+                    : "background-color 150ms ease-out, width 150ms ease-out",
                 }}
               />
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+
+        <div
+          className="absolute right-0 w-[1.5px] rounded-full"
+          style={{
+            top: `${scrollProgress * 100}%`,
+            height: 3,
+            backgroundColor: "var(--color-primary)",
+            boxShadow: "0 0 6px oklch(0.500 0.180 279 / 0.4)",
+            transition: reducedMotion ? "none" : "top 50ms linear",
+          }}
+        />
+      </div>
     </div>
   );
 }
