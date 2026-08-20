@@ -12,6 +12,7 @@ vi.mock("@google/generative-ai", () => ({
   },
   HarmBlockThreshold: {
     BLOCK_NONE: "BLOCK_NONE",
+    BLOCK_MEDIUM_AND_ABOVE: "BLOCK_MEDIUM_AND_ABOVE",
   },
 }));
 
@@ -32,10 +33,10 @@ describe("gemini safety settings", () => {
       expect(categories).toContain(HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT);
     });
 
-    it("sets all thresholds to BLOCK_NONE for educational content", () => {
+    it("sets all thresholds to BLOCK_MEDIUM_AND_ABOVE for content safety", () => {
       const settings = getSafetySettings();
       settings.forEach((s) => {
-        expect(s.threshold).toBe(HarmBlockThreshold.BLOCK_NONE);
+        expect(s.threshold).toBe(HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE);
       });
     });
   });

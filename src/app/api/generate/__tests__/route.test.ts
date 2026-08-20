@@ -1,10 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockGenerateContent, mockPrismaCreate, mockPrismaFindFirst, mockPrismaUpdate } = vi.hoisted(() => ({
+const { mockGenerateContent, mockPrismaCreate, mockPrismaFindFirst, mockPrismaUpdate, mockRateLimitCount, mockRateLimitCreate, mockRateLimitDeleteMany, mockRateLimitFindFirst } = vi.hoisted(() => ({
   mockGenerateContent: vi.fn(),
   mockPrismaCreate: vi.fn(),
   mockPrismaFindFirst: vi.fn(),
   mockPrismaUpdate: vi.fn(),
+  mockRateLimitCount: vi.fn().mockResolvedValue(0),
+  mockRateLimitCreate: vi.fn().mockResolvedValue({}),
+  mockRateLimitDeleteMany: vi.fn().mockResolvedValue({}),
+  mockRateLimitFindFirst: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -13,6 +17,12 @@ vi.mock("@/lib/prisma", () => ({
       create: mockPrismaCreate,
       findFirst: mockPrismaFindFirst,
       update: mockPrismaUpdate,
+    },
+    rateLimit: {
+      count: mockRateLimitCount,
+      create: mockRateLimitCreate,
+      deleteMany: mockRateLimitDeleteMany,
+      findFirst: mockRateLimitFindFirst,
     },
   },
 }));

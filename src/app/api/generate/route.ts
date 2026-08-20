@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createGeminiClient, getSafetySettings, isSafetyBlock } from "@/lib/gemini";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { dbRateLimiter } from "@/lib/rate-limiter";
 import { isTopicAllowed } from "@/lib/content-safety";
 import { normalizeSlug } from "@/lib/slug";
 import { NoteContent } from "@/types/note";
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     }
 
     const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
-    const rateLimitResult = rateLimiter.check(ip);
+    const rateLimitResult = await dbRateLimiter.check(ip);
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
