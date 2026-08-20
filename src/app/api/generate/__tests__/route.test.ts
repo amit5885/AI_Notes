@@ -23,6 +23,8 @@ vi.mock("@/lib/gemini", () => ({
       generateContent: mockGenerateContent,
     }),
   }),
+  getSafetySettings: vi.fn().mockReturnValue([]),
+  isSafetyBlock: vi.fn().mockReturnValue(false),
 }));
 
 import { POST } from "../route";

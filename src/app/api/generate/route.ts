@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { createGeminiClient } from "@/lib/gemini";
+import { createGeminiClient, getSafetySettings, isSafetyBlock } from "@/lib/gemini";
 import { rateLimiter } from "@/lib/rate-limiter";
 import { isTopicAllowed } from "@/lib/content-safety";
 import { normalizeSlug } from "@/lib/slug";
@@ -49,9 +49,17 @@ Text: Include brief labels on each step or concept.
 No decorative elements - focus on educational clarity.`;
 
 async function expandQuery(genAI: ReturnType<typeof createGeminiClient>, rawQuery: string): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    safetySettings: getSafetySettings(),
+  });
   const result = await model.generateContent(`${EXPANSION_PROMPT}${rawQuery}`);
   const response = result.response;
+
+  if (isSafetyBlock(response)) {
+    throw new Error("Content blocked by safety filter");
+  }
+
   const text = response.text().trim();
 
   if (!text) {
@@ -68,11 +76,17 @@ async function generateDiagram(
   try {
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash-preview-image-generation",
+      safetySettings: getSafetySettings(),
     });
     const result = await model.generateContent(
       `${DIAGRAM_PROMPT}\n\nTopic: ${topic}`
     );
     const response = result.response;
+
+    if (isSafetyBlock(response)) {
+      console.error("Diagram generation blocked by safety filter");
+      return null;
+    }
 
     const images = (response as unknown as { images?: Array<{ data: string; mimeType: string }> }).images;
     if (images && images.length > 0) {
@@ -143,9 +157,20 @@ export async function POST(request: Request) {
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      safetySettings: getSafetySettings(),
+    });
     const result = await model.generateContent(`${NOTE_PROMPT}\n\nTopic: ${expandedTopic}`);
     const response = result.response;
+
+    if (isSafetyBlock(response)) {
+      return NextResponse.json(
+        { error: "This topic can't be generated. Try something else." },
+        { status: 400 }
+      );
+    }
+
     const text = response.text();
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
