@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { ExportButtons } from "@/components/ExportButtons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
@@ -27,6 +27,7 @@ interface Note {
 export default function NotePage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const topic = params.topic as string;
   const rawQuery = searchParams.get("q") ?? topic;
 
@@ -51,6 +52,12 @@ export default function NotePage() {
           body: JSON.stringify({ topic: rawQuery }),
         });
 
+        if (postRes.status === 429) {
+          const retryAfter = postRes.headers.get("Retry-After") ?? "60";
+          router.push(`/rate-limited?retryAfter=${retryAfter}`);
+          return;
+        }
+
         if (!postRes.ok) {
           throw new Error("Failed to generate note");
         }
@@ -65,7 +72,7 @@ export default function NotePage() {
     }
 
     fetchOrGenerate();
-  }, [topic, rawQuery]);
+  }, [topic, rawQuery, router]);
 
   if (loading) {
     return (

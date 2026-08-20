@@ -4,10 +4,10 @@
 
 **Blocked by:** 10 (Rate limiting)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create `src/app/rate-limited/page.tsx`
-- [ ] Display friendly message: "You've been busy! Please wait [time] before trying again."
-- [ ] Show countdown timer with retry-after seconds
-- [ ] Auto-redirect or enable retry button when countdown reaches zero
-- [ ] Style to match site design
+- [x] Create `src/app/rate-limited/page.tsx`
+- [x] Display friendly message: "You've been busy! Please wait [time] before trying again."
+- [x] Show countdown timer with retry-after seconds
+- [x] Auto-redirect or enable retry button when countdown reaches zero
+- [x] Style to match site design
