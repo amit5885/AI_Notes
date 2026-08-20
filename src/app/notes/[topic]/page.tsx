@@ -60,7 +60,7 @@ export default function NotePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-8">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6">
         <LoadingSpinner topic={rawQuery} />
       </main>
     );
@@ -68,9 +68,12 @@ export default function NotePage() {
 
   if (error || !note) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-8">
-        <p className="text-red-500 mb-4">{error ?? "Note not found"}</p>
-        <Link href="/" className="text-blue-600 hover:underline">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6">
+        <p className="text-error mb-4">{error ?? "Note not found"}</p>
+        <Link
+          href="/"
+          className="text-primary hover:text-primary-hover transition-colors text-sm font-medium"
+        >
           Back to home
         </Link>
       </main>
@@ -80,57 +83,79 @@ export default function NotePage() {
   const content = note.content;
 
   return (
-    <main className="min-h-screen p-4 sm:p-8 max-w-3xl mx-auto">
+    <main className="min-h-screen px-6 py-12 max-w-[42rem] mx-auto">
       <Link
         href="/"
-        className="text-blue-600 hover:underline mb-6 sm:mb-8 inline-block"
+        className="text-sm text-muted hover:text-ink transition-colors inline-flex items-center gap-1 mb-10"
       >
         &larr; Back
       </Link>
 
       <article>
-        <h1 className="text-2xl sm:text-4xl font-bold mb-4">{note.title}</h1>
-        <div className="mb-6">
+        <header className="mb-10">
+          <h1
+            className="text-3xl sm:text-4xl font-bold tracking-tight mb-4"
+            style={{ textWrap: "balance" }}
+          >
+            {note.title}
+          </h1>
           <ExportButtons note={note} />
+        </header>
+
+        <div className="space-y-8">
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
+              Introduction
+            </h2>
+            <p className="text-ink leading-relaxed">{content.intro}</p>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
+              Key Concepts
+            </h2>
+            <ul className="space-y-2">
+              {content.keyConcepts.map((concept, i) => (
+                <li
+                  key={i}
+                  className="text-ink leading-relaxed pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary/40"
+                >
+                  {concept}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
+              How It Works
+            </h2>
+            <p className="text-ink leading-relaxed whitespace-pre-line">
+              {content.howItWorks}
+            </p>
+            {note.diagramUrl && (
+              <img
+                src={note.diagramUrl}
+                alt={`Diagram of ${note.title}`}
+                className="mt-5 rounded-lg max-w-full border border-border"
+              />
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
+              Example / Analogy
+            </h2>
+            <p className="text-ink leading-relaxed">{content.example}</p>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
+              Summary
+            </h2>
+            <p className="text-ink leading-relaxed">{content.summary}</p>
+          </section>
         </div>
-
-        <section className="mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold mb-2">Introduction</h2>
-          <p className="text-gray-700">{content.intro}</p>
-        </section>
-
-        <section className="mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold mb-2">Key Concepts</h2>
-          <ul className="list-disc list-inside text-gray-700 space-y-1">
-            {content.keyConcepts.map((concept, i) => (
-              <li key={i}>{concept}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold mb-2">How It Works</h2>
-          <p className="text-gray-700 whitespace-pre-line">
-            {content.howItWorks}
-          </p>
-          {note.diagramUrl && (
-            <img
-              src={note.diagramUrl}
-              alt={`Diagram of ${note.title}`}
-              className="mt-4 rounded-lg max-w-full"
-            />
-          )}
-        </section>
-
-        <section className="mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold mb-2">Example / Analogy</h2>
-          <p className="text-gray-700">{content.example}</p>
-        </section>
-
-        <section className="mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold mb-2">Summary</h2>
-          <p className="text-gray-700">{content.summary}</p>
-        </section>
 
         <RelatedTopics topics={content.relatedTopics} />
       </article>

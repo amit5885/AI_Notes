@@ -46,7 +46,7 @@ function NotePDF({ note }: { note: NoteExport }) {
         <Text style={styles.heading}>Key Concepts</Text>
         {note.content.keyConcepts.map((concept, i) => (
           <Text key={i} style={styles.listItem}>
-            • {concept}
+            &bull; {concept}
           </Text>
         ))}
 
@@ -77,20 +77,20 @@ export function ExportButtons({ note }: { note: NoteExport }) {
   const filename = `${normalizeSlug(note.title)}.pdf`;
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-2">
       <PDFDownloadLink
         document={<NotePDF note={note} />}
         fileName={filename}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary-hover transition-colors"
       >
-        {({ loading }) => (loading ? "Generating PDF..." : "Download PDF")}
+        {({ loading }) => (loading ? "Generating..." : "PDF")}
       </PDFDownloadLink>
 
       <button
         onClick={() => downloadMarkdown(note)}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-surface text-ink border border-border rounded-md text-sm font-medium hover:bg-border transition-colors"
       >
-        Download Markdown
+        Markdown
       </button>
     </div>
   );

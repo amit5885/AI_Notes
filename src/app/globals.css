@@ -1,14 +1,36 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-bg: oklch(1.000 0.000 0);
+  --color-surface: oklch(0.975 0.005 280);
+  --color-ink: oklch(0.145 0.010 280);
+  --color-primary: oklch(0.500 0.180 279);
+  --color-primary-hover: oklch(0.450 0.180 279);
+  --color-accent: oklch(0.600 0.120 175);
+  --color-muted: oklch(0.550 0.010 280);
+  --color-border: oklch(0.900 0.005 280);
+  --color-error: oklch(0.550 0.200 25);
+  --color-success: oklch(0.550 0.160 155);
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--color-bg);
+  --foreground: var(--color-ink);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: oklch(0.130 0.010 280);
+    --foreground: oklch(0.930 0.005 280);
+  }
+  :root {
+    --color-bg: oklch(0.130 0.010 280);
+    --color-surface: oklch(0.170 0.010 280);
+    --color-ink: oklch(0.930 0.005 280);
+    --color-border: oklch(0.250 0.010 280);
+    --color-muted: oklch(0.600 0.005 280);
   }
 }
 
@@ -16,7 +38,9 @@ html,
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -26,4 +50,8 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
+}
+
+::selection {
+  background: oklch(0.500 0.180 279 / 0.2);
 }
