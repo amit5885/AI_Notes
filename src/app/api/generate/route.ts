@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { createGeminiClient } from "@/lib/gemini";
 import { rateLimiter } from "@/lib/rate-limiter";
 import { isTopicAllowed } from "@/lib/content-safety";
+import { normalizeSlug } from "@/lib/slug";
 import { NoteContent } from "@/types/note";
 
 const EXPANSION_PROMPT = `You are a topic normalizer. Rewrite the user's input into a single, clear academic topic.
@@ -44,15 +45,6 @@ Colors: Use a light background with contrasting colors for readability.
 Layout: Horizontal or vertical flow, well-spaced elements.
 Text: Include brief labels on each step or concept.
 No decorative elements - focus on educational clarity.`;
-
-function normalizeTopic(raw: string): string {
-  return raw
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 async function expandQuery(genAI: ReturnType<typeof createGeminiClient>, rawQuery: string): Promise<string> {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -131,7 +123,7 @@ export async function POST(request: Request) {
     const genAI = createGeminiClient();
 
     const expandedTopic = await expandQuery(genAI, topic.trim());
-    const slug = normalizeTopic(expandedTopic);
+    const slug = normalizeSlug(expandedTopic);
 
     const existing = await prisma.note.findFirst({
       where: { topic: slug },

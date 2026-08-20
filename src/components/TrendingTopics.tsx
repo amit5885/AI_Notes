@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { normalizeSlug } from "@/lib/slug";
 
 const DEFAULT_TOPICS = [
   "Photosynthesis",
@@ -36,7 +37,7 @@ export function TrendingTopics() {
         {topics.map((topic) => (
           <a
             key={topic}
-            href={`/notes/${topic.toLowerCase().replace(/\s+/g, "-")}?q=${encodeURIComponent(topic)}`}
+            href={`/notes/${normalizeSlug(topic)}?q=${encodeURIComponent(topic)}`}
             className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 text-gray-700 rounded-full text-xs sm:text-sm hover:bg-gray-200 transition-colors"
           >
             {topic}

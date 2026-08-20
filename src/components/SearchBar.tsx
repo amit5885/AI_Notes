@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { normalizeSlug } from "@/lib/slug";
 
 export function SearchBar() {
   const [query, setQuery] = useState("");
@@ -11,7 +12,7 @@ export function SearchBar() {
     e.preventDefault();
     const trimmed = query.trim();
     if (trimmed) {
-      const slug = trimmed.toLowerCase().replace(/\s+/g, "-");
+      const slug = normalizeSlug(trimmed);
       router.push(`/notes/${slug}?q=${encodeURIComponent(trimmed)}`);
     }
   };

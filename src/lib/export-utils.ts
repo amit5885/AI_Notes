@@ -1,4 +1,5 @@
 import { NoteExport } from "@/types/note";
+import { normalizeSlug } from "./slug";
 
 export function convertToMarkdown(note: NoteExport): string {
   const { title, content } = note;
@@ -38,6 +39,6 @@ export function downloadFile(content: string, filename: string, mimeType: string
 
 export function downloadMarkdown(note: NoteExport): void {
   const markdown = convertToMarkdown(note);
-  const filename = `${note.title.toLowerCase().replace(/\s+/g, "-")}.md`;
+  const filename = `${normalizeSlug(note.title)}.md`;
   downloadFile(markdown, filename, "text/markdown");
 }

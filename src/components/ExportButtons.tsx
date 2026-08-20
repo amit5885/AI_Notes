@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from "@react-pdf/renderer";
 import { downloadMarkdown } from "@/lib/export-utils";
 import { NoteExport } from "@/types/note";
+import { normalizeSlug } from "@/lib/slug";
 
 const styles = StyleSheet.create({
   page: {
@@ -73,7 +74,7 @@ export function ExportButtons({ note }: { note: NoteExport }) {
     return null;
   }
 
-  const filename = `${note.title.toLowerCase().replace(/\s+/g, "-")}.pdf`;
+  const filename = `${normalizeSlug(note.title)}.pdf`;
 
   return (
     <div className="flex flex-wrap gap-3">
