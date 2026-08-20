@@ -21,7 +21,7 @@ An AI-powered study notes platform where students enter any topic and receive st
 | Language | TypeScript 5.8 |
 | Styling | Tailwind CSS 4 |
 | Database | PostgreSQL + Prisma 6.8 |
-| AI | Google Gemini API (`gemini-3.6-flash`) |
+| AI | Google Gemini API (`gemini-3.6-flash`, `gemini-3.1-flash-image`) |
 | PDF | `@react-pdf/renderer` |
 | Testing | Vitest + React Testing Library |
 

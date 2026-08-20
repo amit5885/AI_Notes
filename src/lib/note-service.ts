@@ -97,11 +97,12 @@ export function createNoteService(deps: NoteServiceDependencies) {
   async function generateDiagram(topic: string): Promise<string | null> {
     try {
       const model = genAI.getGenerativeModel({
-        model: "gemini-3.6-flash-preview-image-generation",
+        model: "gemini-3.1-flash-image",
         safetySettings: getSafetySettings(),
       });
       const result = await model.generateContent(
-        `${DIAGRAM_PROMPT}\n\nTopic: ${topic}`
+        `${DIAGRAM_PROMPT}\n\nTopic: ${topic}`,
+        { generationConfig: { responseModalities: ["TEXT", "IMAGE"] } } as never
       );
       const response = result.response;
 
@@ -110,10 +111,14 @@ export function createNoteService(deps: NoteServiceDependencies) {
         return null;
       }
 
-      const images = (response as unknown as { images?: Array<{ data: string; mimeType: string }> }).images;
-      if (images && images.length > 0) {
-        const image = images[0];
-        return `data:${image.mimeType};base64,${image.data}`;
+      const candidates = (response as unknown as { candidates?: Array<{ content?: { parts?: Array<{ inlineData?: { data: string; mimeType: string } }> } }> }).candidates;
+      if (candidates && candidates.length > 0) {
+        const parts = candidates[0].content?.parts ?? [];
+        for (const part of parts) {
+          if (part.inlineData) {
+            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+          }
+        }
       }
 
       return null;

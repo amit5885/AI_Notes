@@ -194,7 +194,11 @@ describe("NoteService", () => {
       .mockResolvedValueOnce({
         response: {
           text: () => "",
-          images: [{ data: "imgdata", mimeType: "image/png" }],
+          candidates: [{
+            content: {
+              parts: [{ inlineData: { data: "imgdata", mimeType: "image/png" } }],
+            },
+          }],
         },
       });
     mockPrismaCreate.mockResolvedValue({
