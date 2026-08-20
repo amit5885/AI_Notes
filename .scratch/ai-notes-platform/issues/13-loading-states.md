@@ -4,10 +4,10 @@
 
 **Blocked by:** 03 (Homepage UI)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create loading component with spinner animation
-- [ ] Add rotating messages: "Thinking about [topic]...", "Exploring [topic]...", "Almost there..."
-- [ ] Show loading state on homepage during generation
-- [ ] Show loading state on note page during fetch
-- [ ] Ensure loading is responsive on mobile
+- [x] Create loading component with spinner animation
+- [x] Add rotating messages: "Thinking about [topic]...", "Exploring [topic]...", "Almost there..."
+- [x] Show loading state on homepage during generation
+- [x] Show loading state on note page during fetch
+- [x] Ensure loading is responsive on mobile
