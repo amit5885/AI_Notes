@@ -13,6 +13,7 @@ describe("export-utils", () => {
           howItWorks: "Plants use sunlight to convert CO2 into glucose.",
           example: "Think of it like a solar panel making energy.",
           summary: "Photosynthesis is essential for life on Earth.",
+          relatedTopics: ["Cellular Respiration", "Chlorophyll"],
         } as NoteContent,
       };
 
@@ -42,6 +43,7 @@ describe("export-utils", () => {
           howItWorks: "Works",
           example: "Example",
           summary: "Summary",
+          relatedTopics: [],
         } as NoteContent,
       };
 

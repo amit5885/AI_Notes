@@ -4,6 +4,7 @@ export interface NoteContent {
   howItWorks: string;
   example: string;
   summary: string;
+  relatedTopics: string[];
 }
 
 export interface NoteData {

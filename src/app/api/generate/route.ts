@@ -32,11 +32,13 @@ Generate a note with these sections in valid JSON format:
   "keyConcepts": ["concept 1", "concept 2", "concept 3"],
   "howItWorks": "2-3 paragraphs explaining the process",
   "example": "real-world comparison or analogy",
-  "summary": "2-3 sentence wrap-up"
+  "summary": "2-3 sentence wrap-up",
+  "relatedTopics": ["topic 1", "topic 2", "topic 3", "topic 4"]
 }
 
 Tone: Simple, clear, student-friendly.
 Length: ~500-800 words total across all sections.
+relatedTopics: 3-5 topics for further learning (e.g., prerequisites, advanced topics, related fields).
 Return ONLY the JSON object, no markdown fences or extra text.`;
 
 const DIAGRAM_PROMPT = `Generate a clean, educational concept diagram for this topic.
@@ -161,6 +163,7 @@ export async function POST(request: Request) {
       howItWorks?: string;
       example?: string;
       summary?: string;
+      relatedTopics?: string[];
     };
 
     try {
@@ -178,6 +181,7 @@ export async function POST(request: Request) {
       howItWorks: parsed.howItWorks ?? "",
       example: parsed.example ?? "",
       summary: parsed.summary ?? "",
+      relatedTopics: parsed.relatedTopics ?? [],
     };
 
     const note = await prisma.note.create({

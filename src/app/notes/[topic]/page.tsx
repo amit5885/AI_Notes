@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { ExportButtons } from "@/components/ExportButtons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { RelatedTopics } from "@/components/RelatedTopics";
 import { NoteData } from "@/types/note";
 
 export default function NotePage() {
@@ -130,6 +131,8 @@ export default function NotePage() {
           <h2 className="text-lg sm:text-xl font-semibold mb-2">Summary</h2>
           <p className="text-gray-700">{content.summary}</p>
         </section>
+
+        <RelatedTopics topics={content.relatedTopics} />
       </article>
     </main>
   );
