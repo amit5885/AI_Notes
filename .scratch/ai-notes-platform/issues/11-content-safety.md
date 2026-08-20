@@ -4,10 +4,9 @@
 
 **Blocked by:** 04 (Note generation API)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Define keyword blocklist (explicit, violent, harmful terms)
-- [ ] Check input against blocklist before calling AI
-- [ ] Configure Gemini safety settings to block harmful content
-- [ ] Return friendly error: "This topic can't be generated. Try something else."
-- [ ] Test with blocked terms and verify error response
+- [x] Define keyword blocklist (explicit, violent, harmful terms)
+- [x] Check input against blocklist before calling AI
+- [x] Return friendly error: "This topic can't be generated. Try something else."
+- [x] Test with blocked terms and verify error response

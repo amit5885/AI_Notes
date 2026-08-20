@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createGeminiClient } from "@/lib/gemini";
 import { rateLimiter } from "@/lib/rate-limiter";
+import { isTopicAllowed } from "@/lib/content-safety";
 
 interface NoteContent {
   intro: string;
@@ -123,6 +124,14 @@ export async function POST(request: Request) {
             "Retry-After": String(rateLimitResult.retryAfter),
           },
         }
+      );
+    }
+
+    const safetyCheck = isTopicAllowed(topic.trim());
+    if (safetyCheck.blocked) {
+      return NextResponse.json(
+        { error: "This topic can't be generated. Try something else." },
+        { status: 400 }
       );
     }
 
