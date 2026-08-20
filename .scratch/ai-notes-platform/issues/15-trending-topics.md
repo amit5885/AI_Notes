@@ -4,9 +4,9 @@
 
 **Blocked by:** 02 (Database schema)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Create GET `/api/trending` endpoint
-- [ ] Return 3-5 pre-defined or most-generated topics
-- [ ] Display trending topics as clickable chips on homepage
-- [ ] Clicking a trending topic triggers the same flow as searching
+- [x] Create GET `/api/trending` endpoint
+- [x] Return 3-5 pre-defined or most-generated topics
+- [x] Display trending topics as clickable chips on homepage
+- [x] Clicking a trending topic triggers the same flow as searching
