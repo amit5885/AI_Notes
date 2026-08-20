@@ -4,10 +4,10 @@
 
 **Blocked by:** 03 (Homepage UI), 05 (Note display page)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Connect homepage search to POST `/api/generate`
-- [ ] Redirect to `/notes/[topic]` after generation
-- [ ] Verify note loads and displays correctly
-- [ ] Test with 3+ different topics end-to-end
-- [ ] Ensure back button returns to homepage
+- [x] Connect homepage search to POST `/api/generate`
+- [x] Redirect to `/notes/[topic]` after generation
+- [x] Verify note loads and displays correctly
+- [x] Test with 3+ different topics end-to-end
+- [x] Ensure back button returns to homepage
