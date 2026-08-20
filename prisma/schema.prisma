@@ -18,3 +18,11 @@ model Note {
 
   @@index([topic])
 }
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  ip        String
+  timestamp DateTime @default(now())
+
+  @@index([ip, timestamp])
+}
