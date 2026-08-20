@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { createGeminiClient } from "@/lib/gemini";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+    const genAI = createGeminiClient();
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 interface NoteContent {
   intro: string;
@@ -51,6 +52,22 @@ export async function POST(request: Request) {
     }
 
     const slug = normalizeTopic(topic);
+
+    const existing = await prisma.note.findFirst({
+      where: { topic: slug },
+    });
+
+    if (existing) {
+      return NextResponse.json({
+        id: existing.id,
+        topic: existing.topic,
+        rawQuery: existing.rawQuery,
+        title: existing.title,
+        content: existing.content,
+        diagramUrl: existing.diagramUrl,
+        createdAt: existing.createdAt,
+      });
+    }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(`${NOTE_PROMPT}\n\nTopic: ${topic}`);

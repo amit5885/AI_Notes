@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockGenerateContent, mockPrismaCreate } = vi.hoisted(() => ({
+const { mockGenerateContent, mockPrismaCreate, mockPrismaFindFirst } = vi.hoisted(() => ({
   mockGenerateContent: vi.fn(),
   mockPrismaCreate: vi.fn(),
+  mockPrismaFindFirst: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     note: {
       create: mockPrismaCreate,
+      findFirst: mockPrismaFindFirst,
     },
   },
 }));
@@ -54,7 +56,39 @@ describe("POST /api/generate", () => {
     expect(data.error).toBe("Topic is required");
   });
 
-  it("generates a note and stores it in the database", async () => {
+  it("returns cached note when available", async () => {
+    const cachedNote = {
+      id: "cached-1",
+      topic: "photosynthesis",
+      rawQuery: "Photosynthesis",
+      title: "Photosynthesis",
+      content: {
+        intro: "Cached intro.",
+        keyConcepts: ["A"],
+        howItWorks: "Cached how it works.",
+        example: "Cached example.",
+        summary: "Cached summary.",
+      },
+      diagramUrl: null,
+      createdAt: new Date(),
+    };
+
+    mockPrismaFindFirst.mockResolvedValue(cachedNote);
+
+    const request = createRequest({ topic: "Photosynthesis" });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.topic).toBe("photosynthesis");
+    expect(data.content.intro).toBe("Cached intro.");
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+    expect(mockPrismaCreate).not.toHaveBeenCalled();
+  });
+
+  it("generates a note and stores it in the database when not cached", async () => {
+    mockPrismaFindFirst.mockResolvedValue(null);
+
     mockGenerateContent.mockResolvedValue({
       response: {
         text: () =>
@@ -95,10 +129,13 @@ describe("POST /api/generate", () => {
     expect(data.topic).toBe("photosynthesis");
     expect(data.title).toBe("Photosynthesis");
     expect(data.content.intro).toBe("Photosynthesis is how plants make food.");
+    expect(mockGenerateContent).toHaveBeenCalledOnce();
     expect(mockPrismaCreate).toHaveBeenCalledOnce();
   });
 
   it("normalizes topic to slug format", async () => {
+    mockPrismaFindFirst.mockResolvedValue(null);
+
     mockGenerateContent.mockResolvedValue({
       response: {
         text: () =>
@@ -141,6 +178,8 @@ describe("POST /api/generate", () => {
   });
 
   it("returns 500 when AI response cannot be parsed", async () => {
+    mockPrismaFindFirst.mockResolvedValue(null);
+
     mockGenerateContent.mockResolvedValue({
       response: {
         text: () => "This is not valid JSON",
@@ -156,6 +195,8 @@ describe("POST /api/generate", () => {
   });
 
   it("returns 500 when database write fails", async () => {
+    mockPrismaFindFirst.mockResolvedValue(null);
+
     mockGenerateContent.mockResolvedValue({
       response: {
         text: () =>

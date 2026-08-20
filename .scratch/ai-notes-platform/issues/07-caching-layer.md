@@ -4,10 +4,10 @@
 
 **Blocked by:** 02 (Database schema)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Normalize topic to slug (lowercase, hyphenated) for cache key
-- [ ] In `/api/generate`, check DB for existing note by slug before calling AI
-- [ ] If cached, return existing note immediately
-- [ ] If not cached, generate fresh and store
-- [ ] Add GET `/api/notes/[topic]` endpoint for direct cache lookup
+- [x] Normalize topic to slug (lowercase, hyphenated) for cache key
+- [x] In `/api/generate`, check DB for existing note by slug before calling AI
+- [x] If cached, return existing note immediately
+- [x] If not cached, generate fresh and store
+- [x] Add GET `/api/notes/[topic]` endpoint for direct cache lookup
