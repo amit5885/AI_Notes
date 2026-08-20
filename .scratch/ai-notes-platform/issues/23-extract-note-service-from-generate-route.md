@@ -17,7 +17,7 @@
 **Decisions (from grilling):**
 - Scope: Full pipeline (expansion → cache → generation → persistence → diagram)
 - Interface: `generate(rawTopic: string): Promise<NoteData>`
-- Errors: Typed errors (`ExpansionError`, `ParseError`)
+- Errors: Typed errors (`ExpansionError`, `ParseError`, `SafetyBlockError`)
 - Dependencies: Factory function `createNoteService(genAI, prisma)`
 - Prompts: Private inside NoteService
 - Diagram: Sequential (after note generation)

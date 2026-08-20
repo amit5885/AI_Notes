@@ -61,7 +61,7 @@ describe("GET /api/trending", () => {
 
     expect(response.status).toBe(200);
     expect(data.topics).toHaveLength(5);
-    expect(data.topics).toContain("photosynthesis");
+    expect(data.topics).toContain("Photosynthesis");
   });
 
   it("handles database errors gracefully", async () => {

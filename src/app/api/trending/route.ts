@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULT_TOPICS = [
-  "photosynthesis",
-  "machine-learning",
-  "solar-system",
-  "binary-search",
-  "climate-change",
+  "Photosynthesis",
+  "Machine Learning",
+  "Solar System",
+  "Binary Search",
+  "Climate Change",
 ];
 
 export async function GET(_request: Request) {

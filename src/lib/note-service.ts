@@ -129,6 +129,7 @@ export function createNoteService(deps: NoteServiceDependencies) {
       expandedTopic = await expandQuery(rawTopic.trim());
     } catch (error) {
       if (error instanceof ExpansionError) throw error;
+      console.error("Expansion failed:", error);
       throw new ExpansionError("Failed to expand query");
     }
 
